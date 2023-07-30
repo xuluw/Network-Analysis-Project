@@ -1,0 +1,28 @@
+---
+title: Elsevier Template
+format:
+  elsevier-pdf:
+    keep-tex: true  
+author:
+  - name: Xulu Wang
+    affiliations:
+      - name: Georgetown University
+        department: MS in Data Science and Analytics
+        address: 4120 Edmunds St NW
+        city: Washington, D.C.
+        country: USA
+        postal-code: 20007-3915
+    orcid: 0000-0000-0000-0000
+    email: xw370@georgetown.edu
+    url: https://example.org/
+abstract: |
+  This document is a template demonstrating the Elsevier format.
+keywords: [template, demo]
+bibliography: bibliography.bib  
+---
+
+## Introduction {#sec-intro}
+
+*TODO* Create a template that demonstrates the appearance, formatting, layout, and functionality of your format. Learn more about journal formats at <https://quarto.org/docs/journals/>.
+
+
