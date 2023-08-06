@@ -214,7 +214,7 @@ def ave_degree(G):
 #------------------------------
 # PLOT DEGREE DISTRIBUTION
 #------------------------------
-def plot_degree_distribution(G,type="in",path="",fit=False):
+def plot_degree_distribution(G,type="in",path=""):
 
     from scipy.optimize import curve_fit
 
@@ -228,7 +228,7 @@ def plot_degree_distribution(G,type="in",path="",fit=False):
          if type=="out":
               degree = list(dict(G.out_degree).values())
 
-    BINS=20
+    BINS=40
     N=nx.number_of_nodes(G)
     FS=14
 
@@ -236,19 +236,19 @@ def plot_degree_distribution(G,type="in",path="",fit=False):
     fig, axs = plt.subplots(1,4)
     fig.set_size_inches(28, 7)
 
-    #1st column: PDF on log-log scale
+    #1st column: PDF
+    sns.histplot(degree, bins=BINS, stat="density", kde=False, ax=axs[0])
+    axs[0].set_xlabel("Degree", fontsize=FS)
+    axs[0].set_ylabel("Probability", fontsize=FS)
+
+    #2nd column: PDF on log-log scale
     counts1, bins1=np.histogram(degree, bins=BINS, density=False)
     bins1=(np.array(bins1[1:])+np.array(bins1[0:-1]))/2.0
 
-    axs[0].plot(bins1, counts1/N, "o-")#,color="orange")
-    axs[0].set_xlabel("Degree (log)", fontsize=FS)
-    axs[0].set_ylabel("Probability (log)", fontsize=FS)
-    axs[0].set_xscale('log'); axs[0].set_yscale('log')
-
-    #2nd column: PDF
-    sns.histplot(degree, bins=BINS, stat="density", kde=False, ax=axs[1])
-    axs[1].set_xlabel("Degree", fontsize=FS)
-    axs[1].set_ylabel("Probability", fontsize=FS)
+    axs[1].plot(bins1, counts1/N, "o-")#,color="orange")
+    axs[1].set_xlabel("Degree (log)", fontsize=FS)
+    axs[1].set_ylabel("Probability (log)", fontsize=FS)
+    axs[1].set_xscale('log'); axs[0].set_yscale('log')
 
     #3rd column: cCDF
     sns.ecdfplot(data=degree, complementary=True, ax=axs[2], marker='o')
@@ -335,18 +335,22 @@ def network_summary(G):
         print("	max:" ,max(x2))
         x=dict(x)
         sort_dict=dict(sorted(x1.items(), key=lambda item: item[1],reverse=True))
-        print("	top nodes:",list(sort_dict)[0:10])
-        print("	          ",list(sort_dict.values())[0:10])
+        print("	top nodes:",list(sort_dict)[0:12])
+        print("	          ",list(sort_dict.values())[0:12])
+        print("	tail nodes:",list(sort_dict)[-10:])
+        print("	          ",list(sort_dict.values())[-10:])
 
     try: 
         print("GENERAL")
         print("	number of nodes:",len(list(G.nodes)))
         print("	number of edges:",len(list(G.edges)))
-
+        
         print("	is_directed:", nx.is_directed(G))
         print("	is_weighted:" ,nx.is_weighted(G))
 
         if(nx.is_directed(G)):
+            print(" is_strongly_connected:",nx.is_strongly_connected(G))
+            print(" is_weakly_connected:",nx.is_weakly_connected(G))
             print("IN-DEGREE (NORMALIZED)")
             centrality_stats(nx.in_degree_centrality(G))
             print("OUT-DEGREE (NORMALIZED)")
@@ -361,6 +365,8 @@ def network_summary(G):
             centrality_stats(nx.closeness_centrality(G))
             print("BETWEEN CENTRALITY")
             centrality_stats(nx.betweenness_centrality(G))
+            print("EIGENVECTOR CENTRALITY")
+            centrality_stats(nx.eigenvector_centrality(G))
 
             if(nx.is_strongly_connected(G)):
                 print("DIAMETER:" ,nx.diameter(G))
@@ -389,6 +395,10 @@ def network_summary(G):
 
             print("BETWEEN CENTRALITY")
             centrality_stats(nx.betweenness_centrality(G))
+
+            print("EIGENVECTOR CENTRALITY")
+            centrality_stats(nx.eigenvector_centrality(G))
+
     except:
         print("unable to run")
 
