@@ -3,135 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-import shutil
-import os
-import imageio.v2 as imageio
 import statsmodels.api as sm
-
-
-#------------------------------
-# ANIMATION PLOT
-#------------------------------
-def animate(networks,pos_type="circular",path="output.gif",plot_every=1):
-
-    # BUILD A TEMPORARY FOLDER TO STORE tmp-i.png
-    def build_tmp_folder(out_dir_path):
-        if(os.path.exists(out_dir_path)):
-            shutil.rmtree(out_dir_path)
-        os.mkdir(out_dir_path)
-
-    tmp_folder = "tmp_png"
-    build_tmp_folder(tmp_folder)
-
-    
-    for network in networks:
-         
-         # DECICE THE NETWORK LAYOUT
-         if pos_type=="circular":
-              pos = nx.circular_layout(network)
-         elif pos_type=="random":
-              pos = nx.random_layout(network)
-         elif pos_type=="spring":
-              pos = nx.spring_layout(network)
-         
-
-         # If it's a directed graph
-         if nx.is_directed(network):
-              # node size = in-degree
-              in_degree = list(dict(network.in_degree).values())
-              node_sizes = [x*500+150 for x in in_degree]
-              # node color = out-degree
-              cmap=plt.cm.get_cmap('summer')
-              out_degree = list(dict(network.out_degree).values())
-              node_colors = [cmap(u/(0.01+max(out_degree))) for u in out_degree]
-
-                   
-              #INITIALIZE FIGURE AND PLOT
-              fig, ax = plt.subplots()
-              fig.set_size_inches(5, 5)
-              
-              #GET MIN AND MAX POSITION
-              tmpx=[]; tmpy=[]
-              for i in pos.keys():
-                   tmpx.append(pos[i][0])
-                   tmpy.append(pos[i][1])
-              Lxmin=min(tmpx)-0.2; Lxmax=max(tmpx)+0.2
-              Lymin=min(tmpy)-0.2; Lymax=max(tmpy)+0.2
-              
-              #DRAW BOX
-              ax.axhline(y=Lymin)
-              ax.axvline(x=Lxmin)
-              ax.axhline(y=Lymax)
-              ax.axvline(x=Lxmax)
-
-              # PLOT NETWORK
-              nx.draw(network,
-                      with_labels=True,
-                      edgecolors="white",
-                      node_color=node_colors,
-                      node_size=node_sizes,
-                      font_color='black',
-                      font_size=14,
-                      pos=pos,
-                      ax=ax
-                      )
-              plt.savefig(tmp_folder+"/tmp-"+str(plot_every)+".png")
-              plt.close()   # Don't show the graph in ".ipynb"
-              plot_every+=1
-
-         else:
-              # node size = node color = degree
-              degree = list(dict(network.degree).values())
-              # node size
-              node_sizes = [x*300 for x in degree]
-              # node color
-              cmap=plt.cm.get_cmap('summer')
-              node_colors = [cmap(u/(0.01+max(degree))) for u in degree]
-
-              #INITIALIZE FIGURE AND PLOT
-              fig, ax = plt.subplots()
-              fig.set_size_inches(6, 6)
-              
-              #GET MIN AND MAX POSITION
-              tmpx=[]; tmpy=[]
-              for i in pos.keys():
-                   tmpx.append(pos[i][0])
-                   tmpy.append(pos[i][1])
-              Lxmin=min(tmpx)-0.2; Lxmax=max(tmpx)+0.2
-              Lymin=min(tmpy)-0.2; Lymax=max(tmpy)+0.2
-              
-              #DRAW BOX
-              ax.axhline(y=Lymin)
-              ax.axvline(x=Lxmin)
-              ax.axhline(y=Lymax)
-              ax.axvline(x=Lxmax)
-
-              # PLOT NETWORK
-              nx.draw(network,
-                      with_labels=True,
-                      edgecolors="white",
-                      node_color=node_colors,
-                      node_size=node_sizes,
-                      font_color='black',
-                      font_size=14,
-                      pos=pos,
-                      ax=ax
-                      )
-              plt.savefig(tmp_folder+"/tmp-"+str(plot_every)+".png")
-              plt.close() # Don't show the graph in ".ipynb"
-              plot_every+=1
-
-    
-    file_names = os.listdir(tmp_folder)
-    # Sort the file names based on the numbers present in the filename
-    sorted_file_names = sorted(file_names, key=lambda x: int(''.join(filter(str.isdigit, x))))
-    # Create the GIF
-    images = list(map(lambda filename: imageio.imread(tmp_folder+"/"+filename), sorted_file_names))
-    imageio.mimsave(path, images, duration = 400)#/len(file_names) ) # modify the frame duration as needed
-
-    # Delete the temporary folder and its contents
-    shutil.rmtree(tmp_folder)
-
 
 
 
@@ -185,28 +57,6 @@ def plot_centrality_correlation(G,path=""):
     if path!="":
         plt.savefig(path, dpi=300, format='pdf')
     plt.show()
-
-
-
-
-#------------------------------
-# AVERAGE DEGREE
-#------------------------------
-def ave_degree(G):
-
-    # If it's a directed graph
-    if nx.is_directed(G):
-        avg_in_degree = np.mean(list(dict(G.in_degree()).values()))
-        avg_out_degree = np.mean(list(dict(G.out_degree()).values()))
-
-        print("The average in-degree is", avg_in_degree)
-        print("The average out-degree is", avg_out_degree)
-
-    # If it's an un-directed graph
-    else:
-         avg_degree=np.mean(list(dict(G.degree()).values()))
-
-         print("The average degree is", avg_degree)
 
 
 
@@ -267,57 +117,6 @@ def plot_degree_distribution(G,type="in",path=""):
 
 
 
-#------------------------------
-# NETWORK PLOTTING FUNCTION
-#------------------------------
-def plot_network(G,node_color="degree",layout="random"):
-    
-    # POSITIONS LAYOUT
-    N=len(G.nodes)
-    if(layout=="spring"):
-        # pos=nx.spring_layout(G,k=50*1./np.sqrt(N),iterations=100)
-        pos=nx.spring_layout(G)
-
-    if(layout=="random"):
-        pos=nx.random_layout(G)
-
-    #INITALIZE PLOT
-    fig, ax = plt.subplots()
-    fig.set_size_inches(15, 15)
-
-    # NODE COLORS
-    cmap=plt.cm.get_cmap('Greens')
-
-    # DEGREE 
-    if node_color=="degree":
-            centrality=list(dict(nx.degree(G)).values())
-  
-    # BETWENNESS 
-    if node_color=="betweeness":
-            centrality=list(dict(nx.betweenness_centrality(G)).values())
-  
-    # CLOSENESS
-    if node_color=="closeness":
-            centrality=list(dict(nx.closeness_centrality(G)).values())
-
-    # NODE SIZE CAN COLOR
-    node_colors = [cmap(u/(0.01+max(centrality))) for u in centrality]
-    node_sizes = [4000*u/(0.01+max(centrality)) for u in centrality]
-
-    # #PLOT NETWORK
-    nx.draw(G,
-            with_labels=True,
-            edgecolors="black",
-            node_color=node_colors,
-            node_size=node_sizes,
-            font_color='white',
-            font_size=18,
-            pos=pos
-            )
-
-    plt.show()
-
-
 
 
 #------------------------------
@@ -336,7 +135,7 @@ def network_summary(G):
         x=dict(x)
         sort_dict=dict(sorted(x1.items(), key=lambda item: item[1],reverse=True))
         print("	top nodes:",list(sort_dict)[0:12])
-        print("	          ",list(sort_dict.values())[0:12])
+        print("	          ",list(sort_dict.values())[0:10])
         print("	tail nodes:",list(sort_dict)[-10:])
         print("	          ",list(sort_dict.values())[-10:])
 
@@ -361,12 +160,14 @@ def network_summary(G):
             #CENTRALITY 
             print("DEGREE (NORMALIZED)")
             centrality_stats(nx.degree_centrality(G))
-            print("CLOSENESS CENTRALITY")
+            print("CLOSENESS CENTRALITY (inward)")
             centrality_stats(nx.closeness_centrality(G))
+            print("CLOSENESS CENTRALITY (outward)")
+            centrality_stats(nx.closeness_centrality(G.reverse()))
             print("BETWEEN CENTRALITY")
-            centrality_stats(nx.betweenness_centrality(G))
+            centrality_stats(nx.betweenness_centrality(G,weight="weight"))
             print("EIGENVECTOR CENTRALITY")
-            centrality_stats(nx.eigenvector_centrality(G))
+            centrality_stats(nx.eigenvector_centrality(G,weight="weight"))
 
             if(nx.is_strongly_connected(G)):
                 print("DIAMETER:" ,nx.diameter(G))
