@@ -78,7 +78,7 @@ def plot_degree_distribution(G,type="in",path=""):
          if type=="out":
               degree = list(dict(G.out_degree).values())
 
-    BINS=40
+    BINS=35
     N=nx.number_of_nodes(G)
     FS=14
 
